@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Mac specific files
+.DS_Store
+
+# Virtual environment
+graph_builder_venv/
