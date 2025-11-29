@@ -109,7 +109,7 @@ def clean_data(raw_data_path):
 
     # Rename the type values
     df = _rename_type_values(df)
-    
+
     return df
 
 
@@ -138,6 +138,15 @@ def prepare_data(raw_data_path, cleaned_data_path=None):
 
     # Corrected Mean
     df = _calc_corrected_mean(df)
+
+    # ------------------------------
+    # Reorder columns
+    # ------------------------------
+    # Put Label column last
+    df = df[[col for col in df.columns if col != "Label"] + ["Label"]]
+
+    # Put Block_ID column first
+    df = df[["Block_ID"] + [col for col in df.columns if col != "Block_ID"]]
 
     # ------------------------------
     # Save data
@@ -175,6 +184,24 @@ def create_feature_dataframe(cleaned_data_path, feature_data_path=None, feature_
 
     # Add Block_ID column
     feature_df["Block_ID"] = main_df["Block_ID"].unique()
+
+    # ------------------------------
+    # Add pivoted data from main dataframe
+    # ------------------------------
+    # Drop Background rows
+    main_df_aux = main_df[main_df["Type"] != "Background"].copy()
+
+    pivoted_df = main_df_aux.pivot(index="Block_ID", columns="Type", values=["Corrected Integrated Density", "Corrected Mean"])
+
+    # Flatten MultiIndex columns
+    pivoted_df.columns = [
+        f"{col1} ({col2})" for col1, col2 in pivoted_df.columns
+    ]
+
+    pivoted_df = pivoted_df.reset_index()
+
+    # Add pivoted data to feature dataframe
+    feature_df = pivoted_df.merge(feature_df, on="Block_ID", how="left")
 
     # ------------------------------
     # Calculate features using registry
