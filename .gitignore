@@ -211,3 +211,6 @@ __marimo__/
 
 # Virtual environment
 graph_builder_venv/
+
+# Data
+data/
